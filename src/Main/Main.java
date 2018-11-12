@@ -2,8 +2,8 @@ package Main;
 
 import Algoritmo.buscaEmProfundidade;
 import Grafo.Arquivo;
-import Grafo.Grafo;
-import Grafo.GrafoDir;
+import Grafo.Rota;
+import Grafo.Voos;
 import Grafo.Vertice;
 
 public class Main {
@@ -17,8 +17,8 @@ public class Main {
 		Arquivo arq5 = new Arquivo("pendente.txt");
 		Arquivo arq6 = new Arquivo("regular.txt");
 		Arquivo arq7 = new Arquivo("unicursal.txt");
-		Grafo grafo = new Grafo();
-		GrafoDir grafo2 = new GrafoDir();
+		Rota grafo = new Rota();
+		Voos grafo2 = new Voos();
 		Vertice teste = null;
 
 		String s = arq.ler();
@@ -56,8 +56,8 @@ public class Main {
 			System.out.println(grafo2.getGrauSaida(teste));
 		}
 
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq2.ler();
 		arestas = s.split(",");
@@ -91,8 +91,8 @@ public class Main {
 			System.out.println(grafo2.getGrauSaida(teste));
 		}
 
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq3.ler();
 		arestas = s.split(",");
@@ -131,12 +131,9 @@ public class Main {
 		else
 			System.out.println("Grafo conexo");
 
-		grafo.getAGMKruskal();
 
-		grafo.getAGMPrim(teste);
-
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq4.ler();
 		arestas = s.split(",");
@@ -176,12 +173,9 @@ public class Main {
 		else
 			System.out.println("Grafo conexo");
 
-		grafo.getAGMKruskal();
 
-		grafo.getAGMPrim(teste);
-
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq5.ler();
 		arestas = s.split(",");
@@ -221,12 +215,9 @@ public class Main {
 		else
 			System.out.println("Grafo conexo");
 
-		grafo.getAGMKruskal();
 
-		grafo.getAGMPrim(teste);
-
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq6.ler();
 		arestas = s.split(",");
@@ -266,12 +257,9 @@ public class Main {
 		else
 			System.out.println("Grafo conexo");
 
-		grafo.getAGMKruskal();
 
-		grafo.getAGMPrim(teste);
-
-		grafo = new Grafo();
-		grafo2 = new GrafoDir();
+		grafo = new Rota();
+		grafo2 = new Voos();
 
 		s = arq7.ler();
 		arestas = s.split(",");
@@ -311,8 +299,5 @@ public class Main {
 		else
 			System.out.println("Grafo conexo");
 
-		grafo.getAGMKruskal();
-
-		grafo.getAGMPrim(teste);
 	}
 }

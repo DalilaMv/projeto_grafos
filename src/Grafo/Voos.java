@@ -7,7 +7,7 @@ import java.util.Set;
 /**
  * classe que representa um grafo generico
  */
-public class GrafoDir {
+public class Voos {
 
 	private ArrayList<Vertice> vertices;
 	private ArrayList<Aresta> arestas;
@@ -16,21 +16,21 @@ public class GrafoDir {
 	private int[][] matrizCusto;
 	private Random rand = new Random();
 
-	public GrafoDir() {
+	public Voos() {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
 		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
 		this.matrizCusto = new int[vertices.size()][vertices.size()];
 	}
 
-	public GrafoDir(ArrayList<Vertice> v) {
+	public Voos(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
 		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
 		this.matrizCusto = new int[vertices.size()][vertices.size()];
 	}
 
-	public GrafoDir(int[][] matrizAdjacencias, int[][] matrizCusto) {
+	public Voos(int[][] matrizAdjacencias, int[][] matrizCusto) {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
 		for (int i = 0; i < matrizAdjacencias.length; i++) {
@@ -244,7 +244,7 @@ public class GrafoDir {
 			v_adjacencias = this.getAdjacencias(vertice);
 			for (int j = 0; j < v_adjacencias.size(); j++) {
 				verticeAux = v_adjacencias.get(j);
-				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getPeso();
+				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getDistancia();
 			}
 		}
 	}

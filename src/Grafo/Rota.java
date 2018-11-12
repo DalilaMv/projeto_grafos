@@ -4,13 +4,10 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.Set;
 
-import Algoritmo.Kruskal;
-import Algoritmo.Prim;
-
 /**
  * classe que representa um grafo generico
  */
-public class Grafo {
+public class Rota {
 
 	private ArrayList<Vertice> vertices;
 	private ArrayList<Aresta> arestas;
@@ -19,21 +16,21 @@ public class Grafo {
 	private int[][] matrizCusto;
 	private Random rand = new Random();
 
-	public Grafo() {
+	public Rota() {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
 		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
 		this.matrizCusto = new int[vertices.size()][vertices.size()];
 	}
 
-	public Grafo(ArrayList<Vertice> v) {
+	public Rota(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
 		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
 		this.matrizCusto = new int[vertices.size()][vertices.size()];
 	}
 
-	public Grafo(int[][] matrizAdjacencias, int[][] matrizCusto) {
+	public Rota(int[][] matrizAdjacencias, int[][] matrizCusto) {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
 		for (int i = 0; i < matrizAdjacencias.length; i++) {
@@ -227,17 +224,6 @@ public class Grafo {
 		return verificar;
 	}
 
-	public Grafo getAGMPrim(Vertice v1) {
-		Grafo g = null;
-		g = Prim.prim(matrizAdjacencia.clone(), matrizCusto.clone(), v1);
-		return g;
-	}
-
-	public Grafo getAGMKruskal() {
-		Grafo g = null;
-		g = Kruskal.kruskalMST(arestas, vertices);
-		return g;
-	}
 
 	public boolean isAdjacente(Vertice v1, Vertice v2) { //
 		boolean verificar = false;
@@ -330,7 +316,7 @@ public class Grafo {
 			v_adjacencias = this.getAdjacencias(vertice);
 			for (int j = 0; j < v_adjacencias.size(); j++) {
 				verticeAux = v_adjacencias.get(j);
-				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getPeso();
+				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getDistancia();
 			}
 		}
 	}
