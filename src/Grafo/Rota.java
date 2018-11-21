@@ -52,6 +52,66 @@ public class Rota {
 		}
 	}
 
+	public void empresaAerea() {
+		
+		char colors[];
+		// Colors array is used to specify the corresponding color for each edge colors.length == edges.size()
+        int colors_number = 0;
+		// An integer that specifies the number of colors needed to color the graph
+
+ 
+            char label_color = 'A';
+    // label_color is the label givenfor each colors.
+    // starting from 'A' of integer value 65 from the ASCII table.
+            colors = new char[arestas.size()];
+    // initialize the colors array with 0 as initial value for each element.
+            for (int i = 0; i < colors.length; i++) {
+                if (colors[i] == 0) {
+    // If the current node isn't colored assign label_color and increment the Label
+                    colors[i] = label_color;
+                    colors_number++;
+                    label_color = (char) ((int) label_color + 1);
+    // change label color to the lower character in the ASCII Table example: 'A' -> 'B'
+                }
+                for (int j = i + 1; j < colors.length; j++) {
+    // a loop to check the non adjacent edges to current edges with color[i]
+                    if (colors[j] == 0)// check if the edge is not colored then the condition is true
+                    {
+                        boolean adj = false;
+    // a boolean variable initially false to check if the current edge
+    // is not adjacent to other edges with color [i]
+                        for (int k = 0; k < colors.length; k++) {
+                            if (k != j && colors[k] == colors[i]) {
+                                if (isAdjacent(k, j)) {
+    // if the current edge [i], is adjacent to any of the edges holding color[i]
+    // adj is changed to true implying to not color the current edge with color[i]
+                                    adj = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!adj) {
+                            colors[j] = colors[i];
+    // assign current Edge [j] color to be the same as color[i].
+                        }
+                    }
+                }
+            }
+    System.out.println("numero de aeronaves:"+colors_number);
+    System.out.println("");
+	}
+	
+            private boolean isAdjacent(int i, int j) {
+            	// check if the edge:i is adjacent to edge: j
+            	        return (arestas.get(j).getV1().getNome() == arestas.get(i).getV1().getNome()
+            	                || // whenever the two edges share a common node they are said
+            	                arestas.get(j).getV1().getNome()== arestas.get(i).getV2().getNome()
+            	                || // to be adjacent.
+            	                arestas.get(j).getV2().getNome() == arestas.get(i).getV1().getNome()
+            	                || arestas.get(j).getV2().getNome() == arestas.get(i).getV2().getNome());
+            	    
+            	}
+	
 	// Operações básicas em grafos
 	public void adicionaVertice(Vertice vertice) {
 		if (!vertices.contains(vertice)) {
