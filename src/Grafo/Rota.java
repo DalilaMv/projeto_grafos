@@ -1,6 +1,7 @@
 package Grafo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
@@ -53,65 +54,88 @@ public class Rota {
 	}
 
 	public void empresaAerea() {
-		
-		char colors[];
-		// Colors array is used to specify the corresponding color for each edge colors.length == edges.size()
-        int colors_number = 0;
-		// An integer that specifies the number of colors needed to color the graph
 
- 
-            char label_color = 'A';
-    // label_color is the label givenfor each colors.
-    // starting from 'A' of integer value 65 from the ASCII table.
-            colors = new char[arestas.size()];
-    // initialize the colors array with 0 as initial value for each element.
-            for (int i = 0; i < colors.length; i++) {
-                if (colors[i] == 0) {
-    // If the current node isn't colored assign label_color and increment the Label
-                    colors[i] = label_color;
-                    colors_number++;
-                    label_color = (char) ((int) label_color + 1);
-    // change label color to the lower character in the ASCII Table example: 'A' -> 'B'
-                }
-                for (int j = i + 1; j < colors.length; j++) {
-    // a loop to check the non adjacent edges to current edges with color[i]
-                    if (colors[j] == 0)// check if the edge is not colored then the condition is true
-                    {
-                        boolean adj = false;
-    // a boolean variable initially false to check if the current edge
-    // is not adjacent to other edges with color [i]
-                        for (int k = 0; k < colors.length; k++) {
-                            if (k != j && colors[k] == colors[i]) {
-                                if (isAdjacent(k, j)) {
-    // if the current edge [i], is adjacent to any of the edges holding color[i]
-    // adj is changed to true implying to not color the current edge with color[i]
-                                    adj = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (!adj) {
-                            colors[j] = colors[i];
-    // assign current Edge [j] color to be the same as color[i].
-                        }
-                    }
-                }
-            }
-    System.out.println("numero de aeronaves:"+colors_number);
-    System.out.println("");
+		char colors[];
+		int custo = 0;
+		int mincusto = 0;
+		int aeronaves = 0;
+		char label_color;
+		ArrayList<Integer> rotas = null;
+		HashMap<ArrayList<Integer>,Integer> possible = new HashMap<ArrayList<Integer>,Integer>();
+		
+
+		for (int g = 0; g < arestas.size()+1; g++) {
+
+			rotas = new ArrayList<Integer>();
+			label_color = 'A';
+			colors = new char[arestas.size()];
+			aeronaves = 0;
+			custo = 0;
+
+			for (int i = g; i < colors.length; i++) {
+				if (colors[i] == 0) {
+					colors[i] = label_color;
+					rotas.add(i);
+					aeronaves = 1;
+					custo = 0;
+					label_color = (char) ((int) label_color + 1);
+				}
+				for (int j = i + 1; j < colors.length; j++) {
+					if (colors[j] == 0) {
+						boolean adj = false;
+						for (int k = 0; k < colors.length; k++) {
+							if (k != j && colors[k] == colors[i]) {
+								if (isAdjacent(k, j)) {
+									adj = true;
+									break;
+								}
+							}
+						}
+						if (!adj) {
+							colors[j] = colors[i];
+							rotas.add(j);
+							aeronaves++;
+						}
+					}
+				}
+				if ((!rotas.isEmpty()) && (aeronaves == (vertices.size() / 2))) {
+					for (int r : rotas) {
+						custo += arestas.get(r).getDistancia();
+					}
+					possible.put(rotas,custo);
+				}
+				rotas = new ArrayList<Integer>();
+			}
+		}
+		for(ArrayList<Integer> p : possible.keySet()) {
+			custo = possible.get(p);
+			if(mincusto == 0) {
+				mincusto = custo;
+				rotas = p;
+			}else if(mincusto>custo) {
+				mincusto = custo;
+				rotas = p;
+			}
+		}
+		System.out.println("\nNúmero de Aeronaves: " + (vertices.size() / 2));
+		System.out.println("\nRotas Utilizadas: ");
+		for (int r : rotas) {
+			System.out.println(arestas.get(r));
+			custo += arestas.get(r).getDistancia();
+		}
+		System.out.println("\nConsumo Total: " + mincusto);
 	}
-	
-            private boolean isAdjacent(int i, int j) {
-            	// check if the edge:i is adjacent to edge: j
-            	        return (arestas.get(j).getV1().getNome() == arestas.get(i).getV1().getNome()
-            	                || // whenever the two edges share a common node they are said
-            	                arestas.get(j).getV1().getNome()== arestas.get(i).getV2().getNome()
-            	                || // to be adjacent.
-            	                arestas.get(j).getV2().getNome() == arestas.get(i).getV1().getNome()
-            	                || arestas.get(j).getV2().getNome() == arestas.get(i).getV2().getNome());
-            	    
-            	}
-	
+
+	private boolean isAdjacent(int i, int j) {
+		// check if the edge:i is adjacent to edge: j
+		return (arestas.get(j).getV1().getNome() == arestas.get(i).getV1().getNome() || // whenever the two edges share
+																						// a common node they are said
+				arestas.get(j).getV1().getNome() == arestas.get(i).getV2().getNome() || // to be adjacent.
+				arestas.get(j).getV2().getNome() == arestas.get(i).getV1().getNome()
+				|| arestas.get(j).getV2().getNome() == arestas.get(i).getV2().getNome());
+
+	}
+
 	// Operações básicas em grafos
 	public void adicionaVertice(Vertice vertice) {
 		if (!vertices.contains(vertice)) {
@@ -139,6 +163,22 @@ public class Rota {
 	public void conecta(Vertice v1, Vertice v2, int peso) {
 		if (!v1.getAdjacentes().containsKey(v2)) {
 			Aresta aresta = new Aresta(v1, v2, peso);
+			v1.adicionaAresta(aresta, v2);
+			v2.adicionaAresta(aresta, v1);
+			v1.updateGrau();
+			v2.updateGrau();
+			arestas.add(aresta);
+			this.updateMatrizAdjacencias();
+			this.updateMatrizCusto();
+		} else {
+			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
+		}
+
+	}
+
+	public void conecta(Vertice v1, Vertice v2, int distancia, String duracao, ArrayList<String> horarios) {
+		if (!v1.getAdjacentes().containsKey(v2)) {
+			Aresta aresta = new Aresta(v1, v2, distancia, duracao, horarios);
 			v1.adicionaAresta(aresta, v2);
 			v2.adicionaAresta(aresta, v1);
 			v1.updateGrau();
@@ -284,7 +324,6 @@ public class Rota {
 		return verificar;
 	}
 
-
 	public boolean isAdjacente(Vertice v1, Vertice v2) { //
 		boolean verificar = false;
 		if (getArestaEntreVertices(v1, v2) != null) {
@@ -376,7 +415,8 @@ public class Rota {
 			v_adjacencias = this.getAdjacencias(vertice);
 			for (int j = 0; j < v_adjacencias.size(); j++) {
 				verticeAux = v_adjacencias.get(j);
-				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getDistancia();
+				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux)
+						.getDistancia();
 			}
 		}
 	}
@@ -424,12 +464,6 @@ public class Rota {
 		ret += "Grau:  \n";
 		for (Vertice v : vertices)
 			ret += "\t" + v + " -> " + v.getGrau() + "\n";
-		ret += "Regular: \n" + "\t" + isRegular() + "\n";
-		ret += "Nulo: \n" + "\t" + isNulo() + "\n";
-		ret += "Completo: \n" + "\t" + isCompleto() + "\n";
-		ret += "Conexo: \n" + "\t" + isConexo() + "\n";
-		ret += "Eureliano: \n" + "\t" + isEuleriano() + "\n";
-		ret += "Unicursal: \n" + "\t" + isUnicursal() + "\n";
 		ret += "Matriz de Adjacência: \n" + imprimeMatrizAdj() + "\n";
 		ret += "Matriz de Custo: \n" + imprimeMatrizCusto() + "\n";
 
