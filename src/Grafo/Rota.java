@@ -12,7 +12,8 @@ public class Rota {
 
 	private ArrayList<Vertice> vertices;
 	private ArrayList<Aresta> arestas;
-	private ArrayList<Vertice> fechoTransitivo, jaVisitados;
+	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
+	private HashMap<Vertice, Vertice> resp;
 	private int[][] matrizAdjacencia;
 	private int[][] matrizCusto;
 	private Random rand = new Random();
@@ -61,10 +62,9 @@ public class Rota {
 		int aeronaves = 0;
 		char label_color;
 		ArrayList<Integer> rotas = null;
-		HashMap<ArrayList<Integer>,Integer> possible = new HashMap<ArrayList<Integer>,Integer>();
-		
+		HashMap<ArrayList<Integer>, Integer> possible = new HashMap<ArrayList<Integer>, Integer>();
 
-		for (int g = 0; g < arestas.size()+1; g++) {
+		for (int g = 0; g < arestas.size(); g++) {
 
 			rotas = new ArrayList<Integer>();
 			label_color = 'A';
@@ -102,17 +102,17 @@ public class Rota {
 					for (int r : rotas) {
 						custo += arestas.get(r).getDistancia();
 					}
-					possible.put(rotas,custo);
+					possible.put(rotas, custo);
 				}
 				rotas = new ArrayList<Integer>();
 			}
 		}
-		for(ArrayList<Integer> p : possible.keySet()) {
+		for (ArrayList<Integer> p : possible.keySet()) {
 			custo = possible.get(p);
-			if(mincusto == 0) {
+			if (mincusto == 0) {
 				mincusto = custo;
 				rotas = p;
-			}else if(mincusto>custo) {
+			} else if (mincusto > custo) {
 				mincusto = custo;
 				rotas = p;
 			}
@@ -134,6 +134,57 @@ public class Rota {
 				arestas.get(j).getV2().getNome() == arestas.get(i).getV1().getNome()
 				|| arestas.get(j).getV2().getNome() == arestas.get(i).getV2().getNome());
 
+	}
+
+	public void completo() {
+		resp = new HashMap<Vertice, Vertice>();
+		boolean atingiu = false;
+		boolean completo = true;
+		for (int i = 0; i < vertices.size(); i++) {
+			for (int j = i + 1; j < vertices.size() - 1; j++) {
+				visitadosArvore = new ArrayList<Vertice>();
+				atingiu = navegar(vertices.get(i), vertices.get(j));
+				if (atingiu) {
+					resp.put(vertices.get(i), vertices.get(j));
+				} else {
+					completo = false;
+					resp.put(vertices.get(i), vertices.get(j));
+				}
+			}
+		}
+		if (completo) {
+			System.out.println("\nÉ possivel");
+		} else {
+			System.out.println("\nNão é possivel");
+			System.out.println("\nConjunto de aeroporto: ");
+			System.out.println(resp);
+		}
+	}
+
+	private boolean navegar(Vertice v, Vertice vAnterior) {
+		if (visitadosArvore.isEmpty()) {
+			visitadosArvore.add(v);
+		} else if (visitadosArvore.get(0) == v) {
+			return true;
+		}
+		for (Vertice vAdj : adjacentes(v)) {
+			if (vAdj != vAnterior) {
+				if (navegar(vAdj, v))
+					return true;
+			} else if (visitadosArvore.size() == 1) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public String reuniao(String horacompromisso, Vertice origem, Vertice destino) {
+		visitadosArvore = new ArrayList<Vertice>();
+		String ultimo = null;
+		String hora[] = horacompromisso.split(":");
+
+		return ultimo;
 	}
 
 	// Operações básicas em grafos

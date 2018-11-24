@@ -1,6 +1,7 @@
 package Grafo;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ public class Voos {
 	private ArrayList<Vertice> vertices;
 	private ArrayList<Aresta> arestas;
 	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
+	private HashMap<Vertice, Vertice> resp; 
 	private int[][] matrizAdjacencia;
 	private int[][] matrizCusto;
 	private Random rand = new Random();
@@ -119,20 +121,32 @@ public class Voos {
 
 	// MÉTODOS
 
-	public boolean hasCiclo() {
-		boolean resp = false;
-		for (Vertice v : vertices) {
-			visitadosArvore = new ArrayList<Vertice>();
-			resp = hasCiclo(v, v);
-			if (resp) {
-				break;
+	public void completo() {
+		resp = new HashMap<Vertice,Vertice>();
+		boolean atingiu = false;
+		boolean completo = true;
+		for (int i = 0; i < vertices.size(); i++) {
+			for (int j = i + 1; j < vertices.size() - 1; j++) {
+				visitadosArvore = new ArrayList<Vertice>();
+				atingiu = navegar(vertices.get(i), vertices.get(j));
+				if (atingiu) {
+					resp.put(vertices.get(i), vertices.get(j));
+				}else {
+					completo = false;
+					resp.put(vertices.get(i), vertices.get(j));
+				}
 			}
 		}
-
-		return resp;
+		if(completo) {
+			System.out.println("\nÉ possivel");
+		}else {
+			System.out.println("\nNão é possivel");
+			System.out.println("\nConjunto de aeroporto: ");
+			System.out.println(resp);
+		}
 	}
 
-	private boolean hasCiclo(Vertice v, Vertice vAnterior) {
+	private boolean navegar(Vertice v, Vertice vAnterior) {
 		if (visitadosArvore.isEmpty()) {
 			visitadosArvore.add(v);
 		} else if (visitadosArvore.get(0) == v) {
@@ -140,7 +154,7 @@ public class Voos {
 		}
 		for (Vertice vAdj : adjacentes(v)) {
 			if (vAdj != vAnterior)
-				if (hasCiclo(vAdj, v))
+				if (navegar(vAdj, v))
 					return true;
 		}
 
@@ -292,7 +306,6 @@ public class Voos {
 		ret += "Grau:  \n";
 		for (Vertice v : vertices)
 			ret += "\t" + v + " -> " + v.getGrau() + "\n";
-		ret += "Ciclo: \n" + "\t" + hasCiclo() + "\n";
 
 		return ret;
 	}

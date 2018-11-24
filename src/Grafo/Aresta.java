@@ -10,7 +10,7 @@ public class Aresta implements Comparable<Aresta>{
 		private Vertice v2;
 		private int distancia;
 		private String duracao;
-		private List<String> horarios;
+		private ArrayList<String> horarios;
 		
 		public Aresta(Vertice v1, Vertice v2,int distancia, String duracao, ArrayList<String> horarios) {
 			super();
@@ -112,11 +112,11 @@ public class Aresta implements Comparable<Aresta>{
 			this.duracao = duracao;
 		}
 
-		public List<String> getHorarios() {
+		public ArrayList<String> getHorarios() {
 			return horarios;
 		}
 
-		public void setHorarios(List<String> horarios) {
+		public void setHorarios(ArrayList<String> horarios) {
 			this.horarios = horarios;
 		}
 	
