@@ -66,30 +66,30 @@ public class Aresta implements Comparable<Aresta>{
 		
 		
 		public boolean contemAresta(Vertice v1,Vertice v2){
-			if((this.v1.getNome() == v1.getNome())&&(this.v2.getNome() == v2.getNome()))
+			if((this.v1.getRotulo().equals(v1.getRotulo()))&&(this.v2.getRotulo().equals(v2.getRotulo())))
 				return(true);
-			if((this.v1.getNome() == v2.getNome())&&(this.v2.getNome() == v1.getNome())) 
+			if((this.v1.getRotulo().equals(v2.getRotulo()))&&(this.v2.getRotulo().equals(v1.getRotulo()))) 
 				return(true);
 			return(false);
 		}
 		public boolean contemVertice(Vertice v){
-			if(this.v1.getNome() == v.getNome()) 
+			if(this.v1.getRotulo().equals(v.getRotulo())) 
 				return(true);
-			if(this.v2.getNome() == v.getNome()) 
+			if(this.v2.getRotulo().equals(v.getRotulo())) 
 				return(true);
 			return(false);
 		}
 		
 		public boolean contemArestaDir(Vertice v1,Vertice v2){
-			if((this.v1.getNome() == v1.getNome())&&(this.v2.getNome() == v2.getNome())) {
+			if((this.v1.getRotulo().equals(v1.getRotulo()))&&(this.v2.getRotulo().equals(v2.getRotulo()))) {
 				return true;
 			}
 			return false;
 		}
 		public boolean contemVerticeDir(Vertice v){
-			if(this.v1.getNome() == v.getNome()) 
+			if(this.v1.getRotulo().equals(v.getRotulo())) 
 				return(true);
-			if(this.v2.getNome() == v.getNome()) 
+			if(this.v2.getRotulo().equals(v.getRotulo())) 
 				return(true);
 			return(false);
 		}

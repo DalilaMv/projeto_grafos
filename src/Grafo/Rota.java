@@ -1,9 +1,12 @@
 package Grafo;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
+
+import Algoritmo.DisjointSet;
 
 /**
  * classe que representa um grafo generico
@@ -14,126 +17,70 @@ public class Rota {
 	private ArrayList<Aresta> arestas;
 	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
 	private HashMap<Vertice, Vertice> resp;
-	private int[][] matrizAdjacencia;
-	private int[][] matrizCusto;
+	private int cont;
 	private Random rand = new Random();
 
 	public Rota() {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
-		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		this.matrizCusto = new int[vertices.size()][vertices.size()];
+		cont = 0;
 	}
 
 	public Rota(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
-		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		this.matrizCusto = new int[vertices.size()][vertices.size()];
+		cont = vertices.size()-1;
 	}
 
-	public Rota(int[][] matrizAdjacencias, int[][] matrizCusto) {
-		vertices = new ArrayList<Vertice>();
-		arestas = new ArrayList<Aresta>();
-		for (int i = 0; i < matrizAdjacencias.length; i++) {
-			this.adicionaVertice(new Vertice(String.valueOf(i + 1)));
-		}
-		System.out.println("\nOrdem de Inserção - Prim: ");
-		for (int i = 0; i < matrizAdjacencias.length; i++) {
-			for (int j = 0; j < matrizAdjacencias.length; j++) {
-				if (matrizAdjacencias[i][j] == 1) {
-					Vertice v1 = this.getVertice(i);
-					Vertice v2 = this.getVertice(j);
-					if (!v1.getAdjacentes().containsKey(v2)) {
-						Aresta a = new Aresta(v1, v2, matrizCusto[i][j]);
-						System.out.println(a);
-						this.conecta(v1, v2, matrizCusto[i][j]);
-					}
-				}
-			}
-		}
+	public Rota(ArrayList<Vertice> v, ArrayList<Aresta> a) {
+		vertices = v;
+		arestas = a;
+		cont = vertices.size()-1;
 	}
 
 	public void empresaAerea() {
-
-		char colors[];
-		int custo = 0;
-		int mincusto = 0;
-		int aeronaves = 0;
-		char label_color;
-		ArrayList<Integer> rotas = null;
-		HashMap<ArrayList<Integer>, Integer> possible = new HashMap<ArrayList<Integer>, Integer>();
-
-		for (int g = 0; g < arestas.size(); g++) {
-
-			rotas = new ArrayList<Integer>();
-			label_color = 'A';
-			colors = new char[arestas.size()];
-			aeronaves = 0;
-			custo = 0;
-
-			for (int i = g; i < colors.length; i++) {
-				if (colors[i] == 0) {
-					colors[i] = label_color;
-					rotas.add(i);
-					aeronaves = 1;
-					custo = 0;
-					label_color = (char) ((int) label_color + 1);
-				}
-				for (int j = i + 1; j < colors.length; j++) {
-					if (colors[j] == 0) {
-						boolean adj = false;
-						for (int k = 0; k < colors.length; k++) {
-							if (k != j && colors[k] == colors[i]) {
-								if (isAdjacent(k, j)) {
-									adj = true;
-									break;
-								}
-							}
-						}
-						if (!adj) {
-							colors[j] = colors[i];
-							rotas.add(j);
-							aeronaves++;
-						}
-					}
-				}
-				if ((!rotas.isEmpty()) && (aeronaves == (vertices.size() / 2))) {
-					for (int r : rotas) {
-						custo += arestas.get(r).getDistancia();
-					}
-					possible.put(rotas, custo);
-				}
-				rotas = new ArrayList<Integer>();
-			}
-		}
-		for (ArrayList<Integer> p : possible.keySet()) {
-			custo = possible.get(p);
-			if (mincusto == 0) {
-				mincusto = custo;
-				rotas = p;
-			} else if (mincusto > custo) {
-				mincusto = custo;
-				rotas = p;
-			}
-		}
-		System.out.println("\nNúmero de Aeronaves: " + (vertices.size() / 2));
-		System.out.println("\nRotas Utilizadas: ");
-		for (int r : rotas) {
-			System.out.println(arestas.get(r));
-			custo += arestas.get(r).getDistancia();
-		}
-		System.out.println("\nConsumo Total: " + mincusto);
+		this.kruskalMST(arestas, vertices);
 	}
+	
+	private void kruskalMST(ArrayList<Aresta> graphArestas, ArrayList<Vertice> ver){
+		String outputMessage="";
+		ArrayList<Aresta> arestas = new ArrayList<Aresta>();
+		for(Aresta a: graphArestas){
+			a.getV1().setGrau(0);
+			a.getV1().setAdjacentes(new HashMap<Vertice,Aresta>());
+			a.getV2().setGrau(0);
+			a.getV2().setAdjacentes(new HashMap<Vertice,Aresta>());
+			arestas.add(a);
+		}
+		for(Vertice v: ver){
+			v.setGrau(0);
+		}
 
-	private boolean isAdjacent(int i, int j) {
-		// check if the edge:i is adjacent to edge: j
-		return (arestas.get(j).getV1().getNome() == arestas.get(i).getV1().getNome() || // whenever the two edges share
-																						// a common node they are said
-				arestas.get(j).getV1().getNome() == arestas.get(i).getV2().getNome() || // to be adjacent.
-				arestas.get(j).getV2().getNome() == arestas.get(i).getV1().getNome()
-				|| arestas.get(j).getV2().getNome() == arestas.get(i).getV2().getNome());
+		Collections.sort(arestas);		
+		ArrayList<Aresta> mstArestas = new ArrayList<Aresta>();	
 
+		DisjointSet nodeSet = new DisjointSet(ver.size()+1);		
+
+		for(int i=0; i<arestas.size() && mstArestas.size()<(ver.size()-1); i++){		
+			Aresta currentAresta = arestas.get(i);
+			int root1 = nodeSet.find(currentAresta.getV1().getNome());
+			int root2 = nodeSet.find(currentAresta.getV2().getNome());
+			if(root1 != root2){			
+				mstArestas.add(currentAresta);		
+				nodeSet.union(root1, root2);	
+			}
+		}
+
+		outputMessage+="\nOrdem de Inserção - Kruskal ("+mstArestas.size()+" Arestas)\n";
+		int mstTotalArestaWeight=0;
+		for(Aresta Aresta: mstArestas){
+			outputMessage+=Aresta +"\n";
+			mstTotalArestaWeight += Aresta.getDistancia();
+		}
+		outputMessage+="\nPeso Total = "+mstTotalArestaWeight;
+
+		System.out.println(outputMessage);
+		
 	}
 
 	public void completo() {
@@ -154,11 +101,50 @@ public class Rota {
 		}
 		if (completo) {
 			System.out.println("\nÉ possivel");
+			ArrayList<Vertice> result = new ArrayList<Vertice>();
+			ArrayList<Vertice> ver;
+			ArrayList<Aresta> are;
+			for (Vertice v : vertices) {
+				ver = new ArrayList<Vertice>();
+				are = new ArrayList<Aresta>();
+				for (Vertice vr : vertices) {
+					ver.add(vr);
+				}
+				for (Aresta ar : arestas) {
+					are.add(ar);
+				}
+				Rota g = new Rota(ver,are);
+				g.removeVertice(v);
+				if (!g.completoCompl()) {
+					result.add(v);
+				}
+			}
+			System.out.println("\nAeroportos que removidos atrapalham a condição: ");
+			System.out.println(result);
 		} else {
 			System.out.println("\nNão é possivel");
 			System.out.println("\nConjunto de aeroporto: ");
 			System.out.println(resp);
 		}
+	}
+
+	public boolean completoCompl() {
+		resp = new HashMap<Vertice, Vertice>();
+		boolean atingiu = false;
+		boolean completo = true;
+		for (int i = 0; i < vertices.size(); i++) {
+			for (int j = i + 1; j < vertices.size() - 1; j++) {
+				visitadosArvore = new ArrayList<Vertice>();
+				atingiu = navegar(vertices.get(i), vertices.get(j));
+				if (atingiu) {
+					resp.put(vertices.get(i), vertices.get(j));
+				} else {
+					completo = false;
+					resp.put(vertices.get(i), vertices.get(j));
+				}
+			}
+		}
+		return completo;
 	}
 
 	private boolean navegar(Vertice v, Vertice vAnterior) {
@@ -189,12 +175,9 @@ public class Rota {
 
 	// Operações básicas em grafos
 	public void adicionaVertice(Vertice vertice) {
-		if (!vertices.contains(vertice)) {
+		if ((!vertices.contains(vertice)) && (this.getVertice(vertice.getRotulo()) == null)) {
+			vertice.setNome(cont++);
 			vertices.add(vertice);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
-		} else {
-			System.out.println("Valor de vertice ja existente no grafo! -> " + vertice.toString());
 		}
 	}
 
@@ -204,8 +187,6 @@ public class Rota {
 			for (Vertice vAdj : vertice.getAdjacentes().keySet()) {
 				vertice.removeAresta(vAdj);
 			}
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
 		} else {
 			System.out.println("Valor de vertice inválido! -> " + vertice.toString());
 		}
@@ -219,10 +200,6 @@ public class Rota {
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.add(aresta);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
-		} else {
-			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
 		}
 
 	}
@@ -235,8 +212,6 @@ public class Rota {
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.add(aresta);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
 		} else {
 			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
 		}
@@ -251,8 +226,6 @@ public class Rota {
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.remove(aresta);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
 		} else {
 			System.out.println("Não é possível remover aresta inexistente.");
 		}
@@ -422,6 +395,16 @@ public class Rota {
 		return vertices.get(i);
 	}
 
+	public Vertice getVertice(String nome) {
+		Vertice ver = null;
+		for (Vertice v : vertices) {
+			if (v.getRotulo().equals(nome)) {
+				ver = v;
+			}
+		}
+		return ver;
+	}
+
 	public synchronized Aresta getAresta(int i) {
 		return arestas.get(i);
 	}
@@ -441,61 +424,8 @@ public class Rota {
 		return adjacencias;
 	}
 
-	private void updateMatrizAdjacencias() {
-		Vertice vertice;
-		Vertice verticeAux;
-		ArrayList<Vertice> v_adjacencias;
-		matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		for (int i = 0; i < vertices.size(); i++) {
-			vertice = this.getVertice(i);
-			v_adjacencias = this.getAdjacencias(vertice);
-			for (int j = 0; j < v_adjacencias.size(); j++) {
-				verticeAux = v_adjacencias.get(j);
-				this.matrizAdjacencia[i][verticeAux.getNome() - 1] = 1;
-			}
-		}
-	}
-
-	private void updateMatrizCusto() {
-		Vertice vertice;
-		Vertice verticeAux;
-		ArrayList<Vertice> v_adjacencias;
-		matrizCusto = new int[vertices.size()][vertices.size()];
-		for (int i = 0; i < vertices.size(); i++) {
-			vertice = this.getVertice(i);
-			v_adjacencias = this.getAdjacencias(vertice);
-			for (int j = 0; j < v_adjacencias.size(); j++) {
-				verticeAux = v_adjacencias.get(j);
-				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux)
-						.getDistancia();
-			}
-		}
-	}
-
 	public synchronized int getQtdVertices() {
 		return vertices.size();
-	}
-
-	public String imprimeMatrizAdj() {
-		String ret = "";
-		for (int i = 0; i < matrizAdjacencia.length; i++) {
-			for (int j = 0; j < matrizAdjacencia.length; j++) {
-				ret += matrizAdjacencia[i][j] + "\t";
-			}
-			ret += "\n";
-		}
-		return ret;
-	}
-
-	public String imprimeMatrizCusto() {
-		String ret = "";
-		for (int i = 0; i < matrizCusto.length; i++) {
-			for (int j = 0; j < matrizCusto.length; j++) {
-				ret += matrizCusto[i][j] + "\t";
-			}
-			ret += "\n";
-		}
-		return ret;
 	}
 
 	public String toString() {
@@ -515,26 +445,8 @@ public class Rota {
 		ret += "Grau:  \n";
 		for (Vertice v : vertices)
 			ret += "\t" + v + " -> " + v.getGrau() + "\n";
-		ret += "Matriz de Adjacência: \n" + imprimeMatrizAdj() + "\n";
-		ret += "Matriz de Custo: \n" + imprimeMatrizCusto() + "\n";
 
 		return ret;
-	}
-
-	public int[][] getMatrizCusto() {
-		return matrizCusto.clone();
-	}
-
-	public int[][] getMatrizAdj() {
-		return matrizAdjacencia.clone();
-	}
-
-	public void setCusto(int vOrigem, int vDestino, int custo) {
-		this.matrizCusto[vOrigem][vDestino] = custo;
-	}
-
-	public int getCusto(int vOrigem, int vDestino) {
-		return matrizCusto[vOrigem][vDestino];
 	}
 
 	public boolean exists(Vertice v) {

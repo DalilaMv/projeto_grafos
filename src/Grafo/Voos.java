@@ -14,49 +14,22 @@ public class Voos {
 	private ArrayList<Aresta> arestas;
 	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
 	private HashMap<Vertice, Vertice> resp; 
-	private int[][] matrizAdjacencia;
-	private int[][] matrizCusto;
 	private Random rand = new Random();
 
 	public Voos() {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
-		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		this.matrizCusto = new int[vertices.size()][vertices.size()];
 	}
 
 	public Voos(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
-		this.matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		this.matrizCusto = new int[vertices.size()][vertices.size()];
-	}
-
-	public Voos(int[][] matrizAdjacencias, int[][] matrizCusto) {
-		vertices = new ArrayList<Vertice>();
-		arestas = new ArrayList<Aresta>();
-		for (int i = 0; i < matrizAdjacencias.length; i++) {
-			this.adicionaVertice(new Vertice(String.valueOf(i + 1)));
-		}
-		for (int i = 0; i < matrizAdjacencias.length; i++) {
-			for (int j = 0; j < matrizAdjacencias.length; j++) {
-				if (matrizAdjacencias[i][j] == 1) {
-					Vertice v1 = this.getVertice(i);
-					Vertice v2 = this.getVertice(j);
-					this.conecta(v1, v2, matrizCusto[i][j]);
-				}
-			}
-		}
 	}
 
 	// Operações básicas em grafos
 	public void adicionaVertice(Vertice vertice) {
-		if (!vertices.contains(vertice)) {
+		if ((!vertices.contains(vertice)) && (this.getVertice(vertice.getRotulo()) == null)) {
 			vertices.add(vertice);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
-		} else {
-			System.out.println("Valor de vertice ja existente no grafo! -> " + vertice.toString());
 		}
 	}
 
@@ -66,8 +39,6 @@ public class Voos {
 			for (Vertice vAdj : vertice.getAdjacentes().keySet()) {
 				vertice.removeAresta(vAdj);
 			}
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
 		} else {
 			System.out.println("Valor de vertice inválido! -> " + vertice.toString());
 		}
@@ -80,8 +51,20 @@ public class Voos {
 			v1.updateGrau();
 			v2.setGrau(v2.getGrau() + 1);
 			arestas.add(aresta);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
+		} else {
+			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
+		}
+
+	}
+	
+	public void conecta(Vertice v1, Vertice v2, int distancia, String duracao, ArrayList<String> horarios) {
+		if (!v1.getAdjacentes().containsKey(v2)) {
+			Aresta aresta = new Aresta(v1, v2, distancia, duracao, horarios);
+			v1.adicionaAresta(aresta, v2);
+			v2.adicionaAresta(aresta, v1);
+			v1.updateGrau();
+			v2.updateGrau();
+			arestas.add(aresta);
 		} else {
 			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
 		}
@@ -95,8 +78,6 @@ public class Voos {
 			v1.updateGrau();
 			v2.setGrau(v2.getGrau() + 1);
 			arestas.remove(aresta);
-			this.updateMatrizAdjacencias();
-			this.updateMatrizCusto();
 		} else {
 			System.out.println("Não é possível remover aresta inexistente.");
 		}
@@ -122,7 +103,7 @@ public class Voos {
 	// MÉTODOS
 
 	public void completo() {
-		resp = new HashMap<Vertice,Vertice>();
+		resp = new HashMap<Vertice, Vertice>();
 		boolean atingiu = false;
 		boolean completo = true;
 		for (int i = 0; i < vertices.size(); i++) {
@@ -131,19 +112,53 @@ public class Voos {
 				atingiu = navegar(vertices.get(i), vertices.get(j));
 				if (atingiu) {
 					resp.put(vertices.get(i), vertices.get(j));
-				}else {
+				} else {
 					completo = false;
 					resp.put(vertices.get(i), vertices.get(j));
 				}
 			}
 		}
-		if(completo) {
+		if (completo) {
 			System.out.println("\nÉ possivel");
-		}else {
+			ArrayList<Vertice> result = new ArrayList<Vertice>();
+			ArrayList<Vertice> ver;
+			for (Vertice v : vertices) {
+				ver = new ArrayList<Vertice>();
+				for (Vertice vr : vertices) {
+					ver.add(vr);
+				}
+				Rota g = new Rota(ver);
+				g.removeVertice(v);
+				if (!g.completoCompl()) {
+					result.add(v);
+				}
+			}
+			System.out.println("\nAeroportos que removidos atrapalham a condição: ");
+			System.out.println(result);
+		} else {
 			System.out.println("\nNão é possivel");
 			System.out.println("\nConjunto de aeroporto: ");
 			System.out.println(resp);
 		}
+	}
+
+	public boolean completoCompl() {
+		resp = new HashMap<Vertice, Vertice>();
+		boolean atingiu = false;
+		boolean completo = true;
+		for (int i = 0; i < vertices.size(); i++) {
+			for (int j = i + 1; j < vertices.size() - 1; j++) {
+				visitadosArvore = new ArrayList<Vertice>();
+				atingiu = navegar(vertices.get(i), vertices.get(j));
+				if (atingiu) {
+					resp.put(vertices.get(i), vertices.get(j));
+				} else {
+					completo = false;
+					resp.put(vertices.get(i), vertices.get(j));
+				}
+			}
+		}
+		return completo;
 	}
 
 	private boolean navegar(Vertice v, Vertice vAnterior) {
@@ -153,34 +168,15 @@ public class Voos {
 			return true;
 		}
 		for (Vertice vAdj : adjacentes(v)) {
-			if (vAdj != vAnterior)
+			if (vAdj != vAnterior) {
 				if (navegar(vAdj, v))
 					return true;
+			} else if (visitadosArvore.size() == 1) {
+				return true;
+			}
 		}
 
 		return false;
-	}
-
-	public int getGrauEntrada(Vertice v1) {
-		int entrada = 0;
-		int v = vertices.indexOf(v1);
-		for (int j = 0; j < matrizAdjacencia.length; j++) {
-			if (matrizAdjacencia[j][v] == 1) {
-				entrada++;
-			}
-		}
-		return entrada;
-	}
-
-	public int getGrauSaida(Vertice v1) {
-		int saida = 0;
-		int v = vertices.indexOf(v1);
-		for (int j = 0; j < matrizAdjacencia.length; j++) {
-			if (matrizAdjacencia[v][j] == 1) {
-				saida++;
-			}
-		}
-		return saida;
 	}
 
 	// Métodos auxiliares
@@ -216,6 +212,16 @@ public class Voos {
 	public Vertice getVertice(int i) {
 		return vertices.get(i);
 	}
+	
+	public Vertice getVertice(String nome) {
+		Vertice ver = null;
+		for (Vertice v : vertices) {
+			if (v.getRotulo().equals(nome)) {
+				ver = v;
+			}
+		}
+		return ver;
+	}
 
 	public synchronized Aresta getAresta(int i) {
 		return arestas.get(i);
@@ -233,60 +239,8 @@ public class Voos {
 		return adjacencias;
 	}
 
-	private void updateMatrizAdjacencias() {
-		Vertice vertice;
-		Vertice verticeAux;
-		ArrayList<Vertice> v_adjacencias;
-		matrizAdjacencia = new int[vertices.size()][vertices.size()];
-		for (int i = 0; i < vertices.size(); i++) {
-			vertice = this.getVertice(i);
-			v_adjacencias = this.getAdjacencias(vertice);
-			for (int j = 0; j < v_adjacencias.size(); j++) {
-				verticeAux = v_adjacencias.get(j);
-				this.matrizAdjacencia[i][verticeAux.getNome() - 1] = 1;
-			}
-		}
-	}
-
-	private void updateMatrizCusto() {
-		Vertice vertice;
-		Vertice verticeAux;
-		ArrayList<Vertice> v_adjacencias;
-		matrizCusto = new int[vertices.size()][vertices.size()];
-		for (int i = 0; i < vertices.size(); i++) {
-			vertice = this.getVertice(i);
-			v_adjacencias = this.getAdjacencias(vertice);
-			for (int j = 0; j < v_adjacencias.size(); j++) {
-				verticeAux = v_adjacencias.get(j);
-				this.matrizCusto[i][verticeAux.getNome() - 1] = getArestaEntreVertices(vertice, verticeAux).getDistancia();
-			}
-		}
-	}
-
 	public synchronized int getQtdVertices() {
 		return vertices.size();
-	}
-
-	public String imprimeMatrizAdj() {
-		String ret = "";
-		for (int i = 0; i < matrizAdjacencia.length; i++) {
-			for (int j = 0; j < matrizAdjacencia.length; j++) {
-				ret += matrizAdjacencia[i][j] + "\t";
-			}
-			ret += "\n";
-		}
-		return ret;
-	}
-
-	public String imprimeMatrizCusto() {
-		String ret = "";
-		for (int i = 0; i < matrizCusto.length; i++) {
-			for (int j = 0; j < matrizCusto.length; j++) {
-				ret += matrizCusto[i][j] + "\t";
-			}
-			ret += "\n";
-		}
-		return ret;
 	}
 
 	public String toString() {
@@ -308,22 +262,6 @@ public class Voos {
 			ret += "\t" + v + " -> " + v.getGrau() + "\n";
 
 		return ret;
-	}
-
-	public int[][] getMatrizCusto() {
-		return matrizCusto.clone();
-	}
-
-	public int[][] getMatrizAdj() {
-		return matrizAdjacencia.clone();
-	}
-
-	public void setCusto(int vOrigem, int vDestino, int custo) {
-		this.matrizCusto[vOrigem][vDestino] = custo;
-	}
-
-	public int getCusto(int vOrigem, int vDestino) {
-		return matrizCusto[vOrigem][vDestino];
 	}
 
 	public boolean exists(Vertice v) {

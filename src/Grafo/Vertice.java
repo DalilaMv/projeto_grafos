@@ -15,7 +15,6 @@ public class Vertice {
 			super();
 			setAdjacentes(new HashMap<Vertice, Aresta>());
 			setGrau(adjacentes.size());
-			this.setNome(0);
 		}
 		
 		public Vertice(String nome) {
@@ -23,7 +22,6 @@ public class Vertice {
 			setRotulo(nome);
 			setAdjacentes(new HashMap<Vertice, Aresta>());
 			setGrau(adjacentes.size());
-			this.setNome(Integer.valueOf(nome));
 		}
 		
 		public void adicionaAresta(Aresta aresta, Vertice destino) {
@@ -68,7 +66,7 @@ public class Vertice {
 		public void setAdjacentes(HashMap<Vertice, Aresta> adjacentes) {
 			this.adjacentes = adjacentes;
 		}
-		
+
 		public int getNome() {
 			return nome;
 		}
