@@ -33,7 +33,6 @@ public class Vertice {
 
 		public void removeAresta(Vertice vertice) {
 			if (!adjacentes.containsKey(vertice)) {
-				System.out.println("Vertice nao mapeado.");
 				return;
 			}
 			adjacentes.remove(vertice);

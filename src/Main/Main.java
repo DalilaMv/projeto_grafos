@@ -58,7 +58,7 @@ public class Main {
 		//System.out.println(grafo.toString_info());
 		
 		grafo.empresaAerea();
-		//grafo.completo();
+		grafo.completo();
 
 
 	}

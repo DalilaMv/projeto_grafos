@@ -14,16 +14,25 @@ public class Voos {
 	private ArrayList<Aresta> arestas;
 	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
 	private HashMap<Vertice, Vertice> resp; 
+	private int cont;
 	private Random rand = new Random();
 
 	public Voos() {
 		vertices = new ArrayList<Vertice>();
 		arestas = new ArrayList<Aresta>();
+		cont = 0;
 	}
 
 	public Voos(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
+		cont = vertices.size()-1;
+	}
+	
+	public Voos(ArrayList<Vertice> v, ArrayList<Aresta> a) {
+		vertices = v;
+		arestas = a;
+		cont = vertices.size()-1;
 	}
 
 	// Operações básicas em grafos
@@ -61,7 +70,6 @@ public class Voos {
 		if (!v1.getAdjacentes().containsKey(v2)) {
 			Aresta aresta = new Aresta(v1, v2, distancia, duracao, horarios);
 			v1.adicionaAresta(aresta, v2);
-			v2.adicionaAresta(aresta, v1);
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.add(aresta);
@@ -122,12 +130,17 @@ public class Voos {
 			System.out.println("\nÉ possivel");
 			ArrayList<Vertice> result = new ArrayList<Vertice>();
 			ArrayList<Vertice> ver;
+			ArrayList<Aresta> are;
 			for (Vertice v : vertices) {
 				ver = new ArrayList<Vertice>();
+				are = new ArrayList<Aresta>();
 				for (Vertice vr : vertices) {
 					ver.add(vr);
 				}
-				Rota g = new Rota(ver);
+				for (Aresta ar : arestas) {
+					are.add(ar);
+				}
+				Voos g = new Voos(ver,are);
 				g.removeVertice(v);
 				if (!g.completoCompl()) {
 					result.add(v);

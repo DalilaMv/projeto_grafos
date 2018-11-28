@@ -29,58 +29,57 @@ public class Rota {
 	public Rota(ArrayList<Vertice> v) {
 		vertices = v;
 		arestas = new ArrayList<Aresta>();
-		cont = vertices.size()-1;
+		cont = vertices.size() - 1;
 	}
 
 	public Rota(ArrayList<Vertice> v, ArrayList<Aresta> a) {
-		vertices = v;
-		arestas = a;
-		cont = vertices.size()-1;
+		vertices = new ArrayList<Vertice>();
+		for (Vertice ver : v) {
+			vertices.add(ver);
+		}
+		arestas = new ArrayList<Aresta>();
+		for (Aresta are : a) {
+			arestas.add(are);
+		}
+		cont = vertices.size() - 1;
 	}
 
 	public void empresaAerea() {
 		this.kruskalMST(arestas, vertices);
 	}
-	
-	private void kruskalMST(ArrayList<Aresta> graphArestas, ArrayList<Vertice> ver){
-		String outputMessage="";
-		ArrayList<Aresta> arestas = new ArrayList<Aresta>();
-		for(Aresta a: graphArestas){
-			a.getV1().setGrau(0);
-			a.getV1().setAdjacentes(new HashMap<Vertice,Aresta>());
-			a.getV2().setGrau(0);
-			a.getV2().setAdjacentes(new HashMap<Vertice,Aresta>());
-			arestas.add(a);
-		}
-		for(Vertice v: ver){
-			v.setGrau(0);
+
+	private void kruskalMST(ArrayList<Aresta> graphArestas, ArrayList<Vertice> ver) {
+		String outputMessage = "";
+		ArrayList<Aresta> ares = new ArrayList<Aresta>();
+		for (Aresta a : graphArestas) {
+			ares.add(a);
 		}
 
-		Collections.sort(arestas);		
-		ArrayList<Aresta> mstArestas = new ArrayList<Aresta>();	
+		Collections.sort(ares);
+		ArrayList<Aresta> mstArestas = new ArrayList<Aresta>();
 
-		DisjointSet nodeSet = new DisjointSet(ver.size()+1);		
+		DisjointSet nodeSet = new DisjointSet(ver.size() + 1);
 
-		for(int i=0; i<arestas.size() && mstArestas.size()<(ver.size()-1); i++){		
-			Aresta currentAresta = arestas.get(i);
+		for (int i = 0; i < ares.size() && mstArestas.size() < (ver.size() - 1); i++) {
+			Aresta currentAresta = ares.get(i);
 			int root1 = nodeSet.find(currentAresta.getV1().getNome());
 			int root2 = nodeSet.find(currentAresta.getV2().getNome());
-			if(root1 != root2){			
-				mstArestas.add(currentAresta);		
-				nodeSet.union(root1, root2);	
+			if (root1 != root2) {
+				mstArestas.add(currentAresta);
+				nodeSet.union(root1, root2);
 			}
 		}
 
-		outputMessage+="\nOrdem de Inserção - Kruskal ("+mstArestas.size()+" Arestas)\n";
-		int mstTotalArestaWeight=0;
-		for(Aresta Aresta: mstArestas){
-			outputMessage+=Aresta +"\n";
+		outputMessage += "\nOrdem de Inserção - Kruskal (" + mstArestas.size() + " Arestas)\n";
+		int mstTotalArestaWeight = 0;
+		for (Aresta Aresta : mstArestas) {
+			outputMessage += Aresta + "\n";
 			mstTotalArestaWeight += Aresta.getDistancia();
 		}
-		outputMessage+="\nPeso Total = "+mstTotalArestaWeight;
+		outputMessage += "\nPeso Total = " + mstTotalArestaWeight;
 
 		System.out.println(outputMessage);
-		
+
 	}
 
 	public void completo() {
@@ -88,35 +87,34 @@ public class Rota {
 		boolean atingiu = false;
 		boolean completo = true;
 		for (int i = 0; i < vertices.size(); i++) {
-			for (int j = i + 1; j < vertices.size() - 1; j++) {
-				visitadosArvore = new ArrayList<Vertice>();
-				atingiu = navegar(vertices.get(i), vertices.get(j));
-				if (atingiu) {
-					resp.put(vertices.get(i), vertices.get(j));
-				} else {
-					completo = false;
-					resp.put(vertices.get(i), vertices.get(j));
+			for (int j = 0; j < vertices.size() - 1; j++) {
+				if (i != j) {
+					visitadosArvore = new ArrayList<Vertice>();
+					atingiu = navegar(vertices.get(i), vertices.get(j));
+					if (atingiu) {
+						resp.put(vertices.get(i), vertices.get(j));
+					} else {
+						completo = false;
+						resp.put(vertices.get(i), vertices.get(j));
+					}
 				}
 			}
 		}
 		if (completo) {
 			System.out.println("\nÉ possivel");
 			ArrayList<Vertice> result = new ArrayList<Vertice>();
-			ArrayList<Vertice> ver;
-			ArrayList<Aresta> are;
-			for (Vertice v : vertices) {
-				ver = new ArrayList<Vertice>();
-				are = new ArrayList<Aresta>();
-				for (Vertice vr : vertices) {
-					ver.add(vr);
+			Rota g;
+			for (int i = 0; i < vertices.size(); i++) {
+				g = new Rota();
+				for (Vertice v : vertices) {
+					v.setAdjacentes(new HashMap<Vertice, Aresta>());
+					g.adicionaVertice(v);
 				}
-				for (Aresta ar : arestas) {
-					are.add(ar);
+				for (Aresta a : arestas) {
+					g.conecta(a.getV1(), a.getV2(), a.getDistancia(), a.getDuracao(), a.getHorarios());
 				}
-				Rota g = new Rota(ver,are);
-				g.removeVertice(v);
-				if (!g.completoCompl()) {
-					result.add(v);
+				if (!g.completoCompl(i)) {
+					result.add(vertices.get(i));
 				}
 			}
 			System.out.println("\nAeroportos que removidos atrapalham a condição: ");
@@ -128,19 +126,22 @@ public class Rota {
 		}
 	}
 
-	public boolean completoCompl() {
+	public boolean completoCompl(int v) {
+		this.removeVertice(vertices.get(v));
 		resp = new HashMap<Vertice, Vertice>();
 		boolean atingiu = false;
 		boolean completo = true;
 		for (int i = 0; i < vertices.size(); i++) {
-			for (int j = i + 1; j < vertices.size() - 1; j++) {
-				visitadosArvore = new ArrayList<Vertice>();
-				atingiu = navegar(vertices.get(i), vertices.get(j));
-				if (atingiu) {
-					resp.put(vertices.get(i), vertices.get(j));
-				} else {
-					completo = false;
-					resp.put(vertices.get(i), vertices.get(j));
+			for (int j = 0; j < vertices.size() - 1; j++) {
+				if (i != j) {
+					visitadosArvore = new ArrayList<Vertice>();
+					atingiu = navegar(vertices.get(i), vertices.get(j));
+					if (atingiu) {
+						resp.put(vertices.get(i), vertices.get(j));
+					} else {
+						completo = false;
+						resp.put(vertices.get(i), vertices.get(j));
+					}
 				}
 			}
 		}
@@ -184,8 +185,9 @@ public class Rota {
 	public void removeVertice(Vertice vertice) {
 		if (vertices.contains(vertice)) {
 			vertices.remove(vertice);
-			for (Vertice vAdj : vertice.getAdjacentes().keySet()) {
-				vertice.removeAresta(vAdj);
+			for (Vertice v : vertices) {
+				this.desconecta(v, vertice);
+				this.desconecta(vertice, v);
 			}
 		} else {
 			System.out.println("Valor de vertice inválido! -> " + vertice.toString());
@@ -226,8 +228,6 @@ public class Rota {
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.remove(aresta);
-		} else {
-			System.out.println("Não é possível remover aresta inexistente.");
 		}
 	}
 
