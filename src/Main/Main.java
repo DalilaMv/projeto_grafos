@@ -58,6 +58,7 @@ public class Main {
 		//System.out.println(grafo.toString_info());
 		
 		grafo.empresaAerea();
+		System.out.println(grafo.reuniao("13:00", "CONFINS", "SANTO CRISTO"));
 		grafo.completo();
 
 
