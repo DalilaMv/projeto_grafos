@@ -16,7 +16,8 @@ public class Rota {
 	private ArrayList<Vertice> vertices;
 	private ArrayList<Aresta> arestas;
 	private ArrayList<Vertice> fechoTransitivo, jaVisitados, visitadosArvore;
-	private HashMap<Vertice, Vertice> resp;
+	private HashMap<Vertice, ArrayList<Vertice>> vistados;
+	private ArrayList<Vertice> resp;
 	private ArrayList<Aresta> rota;
 	private ArrayList<ArrayList<Aresta>> rotas;
 	private int cont;
@@ -46,11 +47,14 @@ public class Rota {
 		cont = vertices.size() - 1;
 	}
 
-	public void empresaAerea() {
+	public void empresaAerea() { // chama o algoritmo de kruskal passando uma lista de arestas e vertices do
+									// grafo
 		this.kruskalMST(arestas, vertices);
 	}
 
-	private void kruskalMST(ArrayList<Aresta> graphArestas, ArrayList<Vertice> ver) {
+	private void kruskalMST(ArrayList<Aresta> graphArestas, ArrayList<Vertice> ver) { // monta arvore geradora minima
+																						// com as rotas de menor
+																						// distancia
 		String outputMessage = "";
 		ArrayList<Aresta> ares = new ArrayList<Aresta>();
 		for (Aresta a : graphArestas) {
@@ -84,8 +88,8 @@ public class Rota {
 
 	}
 
-	public void completo() {
-		resp = new HashMap<Vertice, Vertice>();
+	public void completo() { // verifica se a partir de um aeroporto e possivel chegar em todos os outros
+		resp = new ArrayList<Vertice>();
 		boolean atingiu = false;
 		boolean completo = true;
 		for (int i = 0; i < vertices.size(); i++) {
@@ -94,15 +98,16 @@ public class Rota {
 					visitadosArvore = new ArrayList<Vertice>();
 					atingiu = navegar(vertices.get(i), vertices.get(j));
 					if (atingiu) {
-						resp.put(vertices.get(i), vertices.get(j));
+						resp.add(vertices.get(i));
 					} else {
 						completo = false;
-						resp.put(vertices.get(i), vertices.get(j));
+						resp.add(vertices.get(i));
 					}
 				}
 			}
 		}
-		if (completo) {
+		if (completo) { // se possivel, mostramos os aeroportos que quando retirados atrapalham a
+						// condição
 			System.out.println("\nÉ possivel");
 			ArrayList<Vertice> result = new ArrayList<Vertice>();
 			Rota g;
@@ -121,16 +126,15 @@ public class Rota {
 			}
 			System.out.println("\nAeroportos que removidos atrapalham a condição: ");
 			System.out.println(result);
-		} else {
+		} else { // se nao, mostramos os conjuntos de aeroportos que cumprem essa condição
 			System.out.println("\nNão é possivel");
 			System.out.println("\nConjunto de aeroporto: ");
 			System.out.println(resp);
 		}
 	}
 
-	public boolean completoCompl(int v) {
+	public boolean completoCompl(int v) { // verifica se o grafo e completo
 		this.removeVertice(vertices.get(v));
-		resp = new HashMap<Vertice, Vertice>();
 		visitadosArvore = new ArrayList<Vertice>();
 		boolean atingiu = false;
 		boolean completo = true;
@@ -139,11 +143,9 @@ public class Rota {
 				if (i != j) {
 					visitadosArvore = new ArrayList<Vertice>();
 					atingiu = navegar(vertices.get(i), vertices.get(j));
-					if (atingiu) {
-						resp.put(vertices.get(i), vertices.get(j));
-					} else {
+					if (!atingiu) {
 						completo = false;
-						resp.put(vertices.get(i), vertices.get(j));
+						break;
 					}
 				}
 			}
@@ -151,7 +153,8 @@ public class Rota {
 		return completo;
 	}
 
-	private boolean navegar(Vertice v, Vertice vAnterior) {
+	private boolean navegar(Vertice v, Vertice vAnterior) { // navega pelo grafo de um ponto A ate um ponto B, se
+															// possivel
 		if (visitadosArvore.isEmpty()) {
 			visitadosArvore.add(vAnterior);
 		} else if (visitadosArvore.get(0) == v) {
@@ -169,17 +172,22 @@ public class Rota {
 		return false;
 	}
 
-	public String reuniao(String horacompromisso, String origem, String destino) {
+	public String reuniao(String horacompromisso, String origem, String destino) { // verifica qual o ultimo voo a
+																					// partir de um vertice A consegue
+																					// chegar ate
+		// um determinado horario em B
 		Vertice a = null;
 		Vertice b = null;
 		rotas = new ArrayList<ArrayList<Aresta>>();
 		rota = new ArrayList<Aresta>();
 		visitadosArvore = new ArrayList<Vertice>();
+		vistados = new HashMap<Vertice, ArrayList<Vertice>>();
 		String ultimo = null;
 		int hora[] = new int[2];
 		int horaAtual[];
 		String h[] = horacompromisso.split(":");
 		for (Vertice v : vertices) {
+			vistados.put(v, new ArrayList<Vertice>());
 			if (v.getRotulo().equals(origem)) {
 				a = v;
 			} else if (v.getRotulo().equals(destino)) {
@@ -189,13 +197,14 @@ public class Rota {
 		hora[0] = Integer.valueOf(h[0]);
 		hora[1] = Integer.valueOf(h[1]);
 		navegarReuniao(a, b);
-		//System.out.println(rotas);
 		for (ArrayList<Aresta> rt : rotas) {
 			horaAtual = new int[2];
 			String temp = null;
 			Aresta are = rt.get(0);
 			String dr[] = are.getDuracao().split(":");
 			for (int i = are.getHorarios().size() - 1; i >= 0; i--) {
+				horaAtual = new int[2];
+				are = rt.get(0);
 				String hr[] = are.getHorarios().get(i).split(":");
 				int hro = Integer.parseInt(hr[0]) + Integer.parseInt(dr[0]);
 				int min = Integer.parseInt(hr[1]) + Integer.parseInt(dr[1]);
@@ -203,72 +212,83 @@ public class Rota {
 					min = min - 60;
 					hro++;
 				}
-				if (hro < hora[0]) {
-					horaAtual[0] = hro;
-					horaAtual[1] = min;
-					temp = are.getHorarios().get(i);
-					break;
-				} else if (hro == hora[0]) {
-					if (min <= hora[1]) {
-						horaAtual[0] = hro;
-						horaAtual[1] = min;
-						temp = are.getHorarios().get(i);
-						break;
-					}
-				}
-			}
-			for (int g = 1; g < rt.size(); g++) {
-				System.out.println(horaAtual[0]+":"+horaAtual[1]);
-				are = rt.get(g);
-				dr = are.getDuracao().split(":");
-				String hr[] = are.getHorarios().get(0).split(":");
-				int hro;
-				int min;
-				if (Integer.parseInt(hr[0]) > horaAtual[0]) {
-					hro = Integer.parseInt(hr[0]) + Integer.parseInt(dr[0]);
-					min = Integer.parseInt(hr[1]) + Integer.parseInt(dr[1]);
-					if (min >= 60) {
-						min = min - 60;
-						hro++;
-					}
-					horaAtual[0] = hro;
-					horaAtual[1] = min;
-				} else if (Integer.parseInt(hr[0]) == horaAtual[0]) {
-					if (Integer.parseInt(hr[1]) > horaAtual[1]) {
-						hro = Integer.parseInt(hr[0]) + Integer.parseInt(dr[0]);
-						min = Integer.parseInt(hr[1]) + Integer.parseInt(dr[1]);
-						if (min >= 60) {
-							min = min - 60;
-							hro++;
+				horaAtual[0] = hro;
+				horaAtual[1] = min;
+				temp = are.getHorarios().get(i);
+				for (int g = 1; g < rt.size(); g++) {
+					are = rt.get(g);
+					dr = are.getDuracao().split(":");
+					for (int j = 0; j < are.getHorarios().size(); j++) {
+						hr = are.getHorarios().get(j).split(":");
+						if (Integer.parseInt(hr[0]) > horaAtual[0]) {
+							hro = Integer.parseInt(hr[0]) + Integer.parseInt(dr[0]);
+							min = Integer.parseInt(hr[1]) + Integer.parseInt(dr[1]);
+							if (min >= 60) {
+								min = min - 60;
+								hro++;
+							}
+							horaAtual[0] = hro;
+							horaAtual[1] = min;
+							break;
+						} else if (Integer.parseInt(hr[0]) == horaAtual[0]) {
+							if (Integer.parseInt(hr[1]) >= horaAtual[1]) {
+								hro = Integer.parseInt(hr[0]) + Integer.parseInt(dr[0]);
+								min = Integer.parseInt(hr[1]) + Integer.parseInt(dr[1]);
+								if (min >= 60) {
+									min = min - 60;
+									hro++;
+								}
+								horaAtual[0] = hro;
+								horaAtual[1] = min;
+								break;
+							}
 						}
-						horaAtual[0] = hro;
-						horaAtual[1] = min;
+						if (horaAtual[0] > hora[0]) {
+							ultimo = "a";
+							break;
+						} else if (horaAtual[0] == hora[0]) {
+							if (horaAtual[1] > hora[1]) {
+								ultimo = "a";
+								break;
+							} else {
+								ultimo = null;
+							}
+						} else {
+							ultimo = null;
+						}
 					}
-				}
-				if (horaAtual[0] > hora[0]) {
-					break;
-				} else if (horaAtual[0] == hora[0]) {
-					if (horaAtual[1] > hora[1]) {
+					if (ultimo != null) {
 						break;
 					}
 				}
+				if (ultimo == null) {
+					break;
+				}
 			}
+
 			if (horaAtual[0] < hora[0]) {
-				ultimo = rt.get(0) + " -> " + temp;
+				ultimo = "Rota: " + rt + "\nÚltimo Voo: " + rt.get(0) + " -> " + temp;
 				break;
 			} else if (horaAtual[0] == hora[0]) {
 				if (horaAtual[1] <= hora[1]) {
-					ultimo = rt.get(0) + " -> " + temp;
+					ultimo = rt + "\n" + rt.get(0) + " -> " + temp;
 					break;
 				}
+			} else {
+				ultimo = null;
 			}
+		}
+		if (ultimo == null) {
+			ultimo = "Não há um voo que chegue antes ou às " + horacompromisso + " em " + b + " partindo de " + a;
 		}
 		return ultimo;
 	}
 
-	private void navegarReuniao(Vertice v, Vertice vAnterior) {
+	private void navegarReuniao(Vertice v, Vertice vAnterior) { // navega pelo grafo montando uma lista de possiveis
+																// rotas de A ate B
 		if (visitadosArvore.isEmpty()) {
 			visitadosArvore.add(vAnterior);
+			visitadosArvore.add(v);
 		} else if (visitadosArvore.get(0) == v) {
 			rota.add(this.getArestaEntreVertices(v, vAnterior));
 			rotas.add(new ArrayList<Aresta>(rota));
@@ -280,20 +300,30 @@ public class Rota {
 		if (adjacentes(v).contains(visitadosArvore.get(0))) {
 			rota.add(this.getArestaEntreVertices(v, vAnterior));
 			navegarReuniao(visitadosArvore.get(0), v);
+			rota.remove(this.getArestaEntreVertices(v, vAnterior));
 			return;
 		}
+		// System.out.println(rota);
 		for (Vertice vAdj : adjacentes(v)) {
-				if (visitadosArvore.size() == 1) {
-					rota.add(this.getArestaEntreVertices(v, vAdj));
-				} else {
+			if (visitadosArvore.get(1) == v) {
+				for (int i = 0; i < vertices.size(); i++) {
+					vistados.replace(vertices.get(i), new ArrayList<Vertice>());
+				}
+				rota = new ArrayList<Aresta>();
+				rota.add(this.getArestaEntreVertices(v, vAdj));
+			} else {
+				if (!rota.contains(this.getArestaEntreVertices(v, vAnterior))) {
 					rota.add(this.getArestaEntreVertices(v, vAnterior));
 				}
-				if (vAdj != vAnterior && !visitadosArvore.contains(vAdj)) {
-					navegarReuniao(vAdj, v);
-				} else if (visitadosArvore.size() == 1) {
-					rotas.add(rota);
-					return;
-				}
+			}
+			if (vAdj != vAnterior && !vistados.get(v).contains(vAdj) && vAdj != visitadosArvore.get(1)) {
+				vistados.get(v).add(vAdj);
+				navegarReuniao(vAdj, v);
+				rota.remove(this.getArestaEntreVertices(v, vAnterior));
+			} else if (visitadosArvore.size() == 2) {
+				rotas.add(rota);
+				return;
+			}
 		}
 		rota.remove(this.getArestaEntreVertices(v, vAnterior));
 		return;
@@ -339,8 +369,6 @@ public class Rota {
 			v1.updateGrau();
 			v2.updateGrau();
 			arestas.add(aresta);
-		} else {
-			System.out.println("Aresta " + v1.toString() + "-" + v2.toString() + "já existe.");
 		}
 
 	}

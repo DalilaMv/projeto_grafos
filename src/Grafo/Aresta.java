@@ -96,7 +96,7 @@ public class Aresta implements Comparable<Aresta>{
 		
 		@Override
 		public String toString() {
-			return "Aresta [ " +v1 +", "+ v2 + ", Peso=" + distancia + " ]";
+			return v1 +", "+ v2 + "/Distância=" + distancia;
 		}
 
 		@Override

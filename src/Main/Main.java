@@ -1,7 +1,9 @@
 package Main;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
+import Algoritmo.DijkstraAlgorithm;
 import Grafo.Arquivo;
 import Grafo.Rota;
 import Grafo.Vertice;
@@ -11,7 +13,7 @@ public class Main {
 
 	public static void main(String[] args) {
 
-		Arquivo arq = new Arquivo("teste.txt");
+		Arquivo arq = new Arquivo("dadosFortementeConexo.txt");
 		Rota grafo = new Rota();
 		Voos grafo2 = new Voos();
 
@@ -57,9 +59,41 @@ public class Main {
 		
 		//System.out.println(grafo.toString_info());
 		
+		System.out.println("\n------------Rotas------------");
+		System.out.println("\n->Empresa Aerea");
 		grafo.empresaAerea();
-		System.out.println(grafo.reuniao("13:00", "CONFINS", "SANTO CRISTO"));
-		grafo.completo();
+		System.out.println("\n------------Voos------------");
+		DijkstraAlgorithm dr = new DijkstraAlgorithm(grafo2);
+		
+		System.out.println("\n->Menor Distância de GUARULHOS à GALEAO: ");
+		dr.execute("GUARULHOS",2);
+        LinkedList<Vertice> path = dr.getPath("GALEAO");
+        if(path.size()>0) {
+        System.out.println("\nRota: ");
+        for (Vertice vertex : path) {
+            System.out.println(vertex);
+        }
+        System.out.println("\nCusto: "+dr.distancia("GALEAO")+" Km");
+        }else {
+        	System.out.println("Não há rota entre estes dois aeroportos");
+        }
+        
+		System.out.println("\n->Menor Tempo de Voo de GUARULHOS à GALEAO: ");
+        dr.execute("GUARULHOS",3);
+        path = dr.getPath("GALEAO");
+        if(path.size()>0) {
+        System.out.println("\nRota: ");
+        for (Vertice vertex : path) {
+            System.out.println(vertex);
+        }
+        System.out.println("\nCusto: "+dr.distancia("GALEAO")+" Mins");
+        }else {
+        	System.out.println("Não há rota entre estes dois aeroportos");
+        }
+		System.out.println("\n->Compromisso\n");
+		System.out.println(grafo2.reuniao("17:00", "CONFINS", "GALEAO"));
+		System.out.println("\n->De um aeroporto ao outro");
+		grafo2.completo();
 
 
 	}
